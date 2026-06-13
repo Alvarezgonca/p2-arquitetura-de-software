@@ -1,0 +1,25 @@
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Encaminha as chamadas de API para o gateway. O destino vem da variável
+    # de ambiente GATEWAY_UPSTREAM (substituída na subida do contêiner), o que
+    # mantém o proxy portável: localmente aponta para "gateway:8080" e, na
+    # hospedagem, basta ajustar a variável sem reconstruir a imagem.
+    # O resolver + uso de variável fazem o nome ser resolvido em tempo de
+    # requisição, então o nginx sobe mesmo que o gateway ainda não esteja no ar.
+    location /api/ {
+        resolver 127.0.0.11 valid=10s;
+        set $upstream "http://${GATEWAY_UPSTREAM}";
+        proxy_pass $upstream$request_uri;
+        proxy_set_header Host $host;
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 15s;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

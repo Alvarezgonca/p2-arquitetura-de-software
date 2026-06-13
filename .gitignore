@@ -1,0 +1,16 @@
+# Dependências e artefatos de build
+node_modules/
+dist/
+coverage/
+
+# Variáveis de ambiente locais (segredos)
+.env
+
+# Logs e temporários
+*.log
+npm-debug.log*
+.DS_Store
+
+# Configurações de IDE
+.vscode/
+.idea/

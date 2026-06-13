@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sabor Digital — Gestão do Restaurante</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand__mark">🍽️</span>
+        <div>
+          <h1>Sabor Digital</h1>
+          <p>Gestão de cardápio e pedidos</p>
+        </div>
+      </div>
+      <nav class="tabs" id="tabs">
+        <button class="tab is-active" data-tab="cardapio">Cardápio</button>
+        <button class="tab" data-tab="pedido">Novo pedido</button>
+        <button class="tab" data-tab="pedidos">Pedidos</button>
+        <button class="tab" data-tab="painel">Painel</button>
+      </nav>
+    </header>
+
+    <main class="container">
+      <!-- CARDÁPIO -->
+      <section class="panel is-active" id="tab-cardapio">
+        <div class="panel__head">
+          <h2>Cardápio</h2>
+          <button class="btn btn--ghost" id="toggle-novo-prato">+ Novo prato</button>
+        </div>
+
+        <form class="card form is-hidden" id="form-prato">
+          <div class="grid-2">
+            <label>Nome<input name="name" required minlength="2" /></label>
+            <label>Categoria<input name="category" placeholder="Ex.: Pratos Principais" /></label>
+          </div>
+          <label>Descrição<input name="description" /></label>
+          <label>Preço (R$)<input name="price" type="number" step="0.01" min="0" required /></label>
+          <button class="btn btn--primary" type="submit">Salvar prato</button>
+          <p class="form__msg" id="prato-msg"></p>
+        </form>
+
+        <div id="cardapio-status"></div>
+        <div class="cards" id="cardapio-lista"></div>
+      </section>
+
+      <!-- NOVO PEDIDO -->
+      <section class="panel" id="tab-pedido">
+        <h2>Montar pedido</h2>
+        <p class="muted">Adicione itens pelo cardápio e finalize aqui.</p>
+
+        <div class="cart card" id="carrinho">
+          <p class="muted" id="carrinho-vazio">Seu carrinho está vazio.</p>
+          <ul class="cart__items" id="carrinho-itens"></ul>
+        </div>
+
+        <form class="card form" id="form-pedido">
+          <div class="grid-2">
+            <label>Cliente<input name="customerName" required minlength="2" /></label>
+            <label>Mesa<input name="tableLabel" placeholder="Ex.: Mesa 5 / Balcão" /></label>
+          </div>
+          <label>Desconto
+            <select name="discountCode" id="select-desconto">
+              <option value="NENHUM">Sem desconto</option>
+            </select>
+          </label>
+          <button class="btn btn--primary" type="submit">Finalizar pedido</button>
+          <p class="form__msg" id="pedido-msg"></p>
+        </form>
+      </section>
+
+      <!-- PEDIDOS -->
+      <section class="panel" id="tab-pedidos">
+        <div class="panel__head">
+          <h2>Pedidos recebidos</h2>
+          <button class="btn btn--ghost" id="reload-pedidos">Atualizar</button>
+        </div>
+        <div id="pedidos-status"></div>
+        <div class="cards" id="pedidos-lista"></div>
+      </section>
+
+      <!-- PAINEL -->
+      <section class="panel" id="tab-painel">
+        <div class="panel__head">
+          <h2>Painel do restaurante</h2>
+          <button class="btn btn--ghost" id="reload-painel">Atualizar</button>
+        </div>
+        <div class="stats" id="painel-stats"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Sabor Digital · arquitetura de microsserviços</span>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>

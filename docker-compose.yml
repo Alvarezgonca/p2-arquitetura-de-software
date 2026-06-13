@@ -1,0 +1,84 @@
+name: sabor-digital
+
+services:
+  # ---- Bancos de dados (um por microsserviço) ----
+  menu-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sabor
+      POSTGRES_PASSWORD: ${MENU_DB_PASSWORD:-sabor_menu}
+      POSTGRES_DB: menu_db
+    volumes:
+      - menu-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sabor -d menu_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  orders-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sabor
+      POSTGRES_PASSWORD: ${ORDERS_DB_PASSWORD:-sabor_orders}
+      POSTGRES_DB: orders_db
+    volumes:
+      - orders-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sabor -d orders_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ---- Microsserviços ----
+  menu-service:
+    build: ./services/menu-service
+    environment:
+      PORT: 3001
+      NODE_ENV: production
+      DATABASE_URL: postgres://sabor:${MENU_DB_PASSWORD:-sabor_menu}@menu-db:5432/menu_db
+    depends_on:
+      - menu-db
+    restart: unless-stopped
+
+  orders-service:
+    build: ./services/orders-service
+    environment:
+      PORT: 3002
+      NODE_ENV: production
+      DATABASE_URL: postgres://sabor:${ORDERS_DB_PASSWORD:-sabor_orders}@orders-db:5432/orders_db
+    depends_on:
+      - orders-db
+    restart: unless-stopped
+
+  # ---- Gateway (entrada da API) ----
+  gateway:
+    build: ./gateway
+    environment:
+      PORT: 8080
+      NODE_ENV: production
+      MENU_SERVICE_URL: http://menu-service:3001
+      ORDERS_SERVICE_URL: http://orders-service:3002
+    depends_on:
+      - menu-service
+      - orders-service
+    restart: unless-stopped
+
+  # ---- Frontend (entrada pública) ----
+  web:
+    build: ./web
+    environment:
+      # Host interno do gateway. Local: "gateway:8080". Em hospedagem que
+      # prefixa nomes de serviço (ex.: EasyPanel), ajuste para "projeto_gateway:8080".
+      GATEWAY_UPSTREAM: ${GATEWAY_UPSTREAM:-gateway:8080}
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      - gateway
+    restart: unless-stopped
+
+volumes:
+  menu-db-data:
+  orders-db-data:
