@@ -100,8 +100,11 @@ services:
       # Host interno do gateway. Local: "gateway:8080". Em hospedagem que
       # prefixa nomes de serviço (ex.: EasyPanel), ajuste para "projeto_gateway:8080".
       GATEWAY_UPSTREAM: ${GATEWAY_UPSTREAM:-gateway:8080}
-    ports:
-      - "${WEB_PORT:-8080}:80"
+    # Sem "ports" aqui: em hospedagem (EasyPanel) o acesso é por domínio,
+    # apontando para a porta 80 do contêiner. Para rodar LOCAL com porta
+    # publicada, use o docker-compose.override.yml (carregado automaticamente).
+    expose:
+      - "80"
     depends_on:
       - gateway
     restart: unless-stopped
