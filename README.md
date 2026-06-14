@@ -5,9 +5,9 @@ arquitetura de **microsserviços** com **Arquitetura Limpa**, aplicando **SOLID*
 **Design Patterns**, **TDD** e **BDD**, empacotado com **Docker Compose** e publicado
 em servidor.
 
-> **Aluno:** _preencha com seu nome_
+> **Aluno:** Daniel Alvarez Gonçalves
 > **Disciplina:** Arquitetura de Software — Universidade de Vassouras (Campus Maricá)
-> **Aplicação publicada:** _preencha com o link após o deploy_ (ex.: `https://sabor.seudominio.com`)
+> **Aplicação publicada:** [Link do Sabor Digital](https://p2-arquitetura-de-software-sabor-digital.n5ywgm.easypanel.host/)
 
 ---
 
@@ -183,8 +183,8 @@ cd gateway && npm install && npm run dev                        # porta 8080
 ## 10. Deploy
 
 Publicado via **Docker Compose** em servidor (EasyPanel). O frontend (`web`) é a entrada
-pública; o gateway e os serviços ficam na rede interna. Passo a passo no guia de
-hospedagem entregue à parte.
+pública, exposto por domínio; o gateway e os serviços ficam na rede interna, e cada banco
+roda em seu próprio contêiner. O link da aplicação no ar está no topo deste README.
 
 ## 11. Mapa de critérios da avaliação
 
