@@ -264,6 +264,33 @@ h2 {
   font-size: 13px;
 }
 
+.btn--danger {
+  background: transparent;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+
+.btn--danger:hover {
+  background: var(--danger);
+  color: #fff;
+  filter: none;
+}
+
+.form__actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.cart__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
 .cart__items {
   list-style: none;
   margin: 0;
@@ -337,6 +364,174 @@ h2 {
 
 .is-hidden {
   display: none;
+}
+
+/* ----- Filtros do cardápio ----- */
+.filterbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.filterbar__search {
+  flex: 1 1 220px;
+  padding: 10px 14px;
+  border: 1px solid #e0cfb6;
+  border-radius: 999px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  border: 1px solid var(--terracotta);
+  background: transparent;
+  color: var(--terracotta-dark);
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.chip:hover {
+  background: var(--cream-2);
+}
+
+.chip--on {
+  background: var(--terracotta);
+  color: #fff;
+}
+
+.panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.select-inline {
+  padding: 8px 12px;
+  border: 1px solid #e0cfb6;
+  border-radius: 10px;
+  font-size: 13px;
+  background: #fff;
+  color: var(--ink);
+}
+
+/* ----- Cartão de prato ----- */
+.dish__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.dish--off {
+  opacity: 0.6;
+  border-top-color: #c9b79c;
+}
+
+/* ----- Pedidos / status ----- */
+.order__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.order__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.status {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.status--RECEBIDO {
+  background: #eef1e2;
+  color: #5d6a33;
+}
+
+.status--EM_PREPARO {
+  background: #fdeede;
+  color: #8a5a14;
+}
+
+.status--PRONTO {
+  background: #e3eef6;
+  color: #2f6690;
+}
+
+.status--ENTREGUE {
+  background: #e3f1e6;
+  color: #2f7d3f;
+}
+
+.status--CANCELADO,
+.status--CANCELADA {
+  background: #f7e2e0;
+  color: var(--danger);
+}
+
+.status--PENDENTE {
+  background: #fdeede;
+  color: #8a5a14;
+}
+
+.status--CONFIRMADA {
+  background: #e3eef6;
+  color: #2f6690;
+}
+
+.status--CONCLUIDA {
+  background: #e3f1e6;
+  color: #2f7d3f;
+}
+
+/* ----- Blocos extras do painel ----- */
+.panel-block {
+  margin-top: 16px;
+}
+
+.panel-block h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.breakdown {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.breakdown li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dashed #e3d4ba;
+}
+
+.breakdown li:last-child {
+  border-bottom: none;
 }
 
 .footer {

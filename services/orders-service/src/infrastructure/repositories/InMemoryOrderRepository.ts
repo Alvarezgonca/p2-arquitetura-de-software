@@ -1,15 +1,28 @@
 import { Order } from '../../domain/entities/Order';
-import { OrderRepository } from '../../domain/repositories/OrderRepository';
+import { OrderFilter, OrderRepository } from '../../domain/repositories/OrderRepository';
 
 /** Repositório em memória — testes e fallback sem banco configurado. */
 export class InMemoryOrderRepository implements OrderRepository {
-  private readonly items: Order[] = [];
+  private readonly items = new Map<string, Order>();
 
   async save(order: Order): Promise<void> {
-    this.items.push(order);
+    this.items.set(order.id, order);
   }
 
-  async findAll(): Promise<Order[]> {
-    return [...this.items].reverse();
+  async findAll(filter?: OrderFilter): Promise<Order[]> {
+    let orders = [...this.items.values()].reverse();
+    if (filter?.status) {
+      const status = filter.status.toUpperCase();
+      orders = orders.filter((order) => order.status === status);
+    }
+    return orders;
+  }
+
+  async findById(id: string): Promise<Order | null> {
+    return this.items.get(id) ?? null;
+  }
+
+  async delete(id: string): Promise<boolean> {
+    return this.items.delete(id);
   }
 }

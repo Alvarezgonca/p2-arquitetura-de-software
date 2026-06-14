@@ -1,6 +1,6 @@
 import type { Pool } from 'pg';
 import { Dish } from '../../domain/entities/Dish';
-import { DishRepository } from '../../domain/repositories/DishRepository';
+import { DishFilter, DishRepository } from '../../domain/repositories/DishRepository';
 import { DatabaseUnavailableError } from '../../domain/errors/DomainError';
 import { getPool } from '../database/pool';
 import { isConnectionError } from '../database/connectionErrors';
@@ -43,12 +43,31 @@ export class PgDishRepository implements DishRepository {
     }
   }
 
-  async findAll(): Promise<Dish[]> {
+  async findAll(filter?: DishFilter): Promise<Dish[]> {
+    const conditions: string[] = [];
+    const params: unknown[] = [];
+
+    if (filter?.category) {
+      params.push(filter.category);
+      conditions.push(`LOWER(category) = LOWER($${params.length})`);
+    }
+    if (filter?.search) {
+      params.push(`%${filter.search}%`);
+      conditions.push(`(name ILIKE $${params.length} OR description ILIKE $${params.length})`);
+    }
+    if (filter?.available !== undefined) {
+      params.push(filter.available);
+      conditions.push(`available = $${params.length}`);
+    }
+
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     try {
       const result = await this.pool.query<DishRow>(
         `SELECT id, name, description, price_cents, category, available
          FROM dishes
+         ${where}
          ORDER BY category, name`,
+        params,
       );
       return result.rows.map((row) => this.toEntity(row));
     } catch (err) {
@@ -66,6 +85,15 @@ export class PgDishRepository implements DishRepository {
       );
       const row = result.rows[0];
       return row ? this.toEntity(row) : null;
+    } catch (err) {
+      throw this.translate(err);
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      const result = await this.pool.query('DELETE FROM dishes WHERE id = $1', [id]);
+      return (result.rowCount ?? 0) > 0;
     } catch (err) {
       throw this.translate(err);
     }

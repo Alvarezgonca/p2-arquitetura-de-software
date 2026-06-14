@@ -18,9 +18,11 @@ papel ou planilhas, o que gera erros de preço, dificuldade para aplicar promoç
 nenhuma visão consolidada do faturamento. O **Sabor Digital** resolve isso com um
 sistema simples em que a equipe:
 
-- cadastra e consulta os **pratos do cardápio**;
-- registra **pedidos**, aplicando **políticas de desconto** de forma consistente;
-- acompanha um **painel** com total de pratos, total de pedidos e faturamento.
+- cadastra, **edita** e **exclui** os **pratos do cardápio**, ligando/desligando a disponibilidade;
+- registra **pedidos**, aplicando **políticas de desconto** de forma consistente, acompanha o
+  **status** na cozinha e **exclui** pedidos encerrados do histórico;
+- gerencia **reservas de mesa** (agendamento, confirmação, conclusão e cancelamento);
+- acompanha um **painel** com total de pratos, pedidos, faturamento e reservas.
 
 A solução foi desenhada para **continuar de pé mesmo com partes da infraestrutura fora
 do ar**: se o banco de um serviço cai, o usuário vê uma mensagem amigável e o restante
@@ -36,25 +38,26 @@ do sistema continua funcionando (ver [§8 Resiliência](#8-resiliência-a-falhas
                           ┌──────────▼──────────┐
                           │      gateway        │  roteamento + agregação
                           │  (Circuit Breaker)  │  + resiliência
-                          └─────┬─────────┬─────┘
-                       /dishes  │         │  /orders
-                    ┌───────────▼──┐   ┌──▼────────────┐
-                    │ menu-service │   │ orders-service│   microsserviços
-                    │ (cardápio)   │   │  (pedidos)    │   autônomos
-                    └──────┬───────┘   └──────┬────────┘
-                           │                  │
-                     ┌─────▼────┐        ┌────▼─────┐
-                     │ menu-db  │        │ orders-db│   um banco por serviço
-                     │ Postgres │        │ Postgres │
-                     └──────────┘        └──────────┘
+                          └──┬───────┬───────┬──┘
+                     /dishes │  /orders│       │ /reservations
+                  ┌──────────▼─┐ ┌─────▼──────┐ ┌▼──────────────────┐
+                  │menu-service│ │orders-svc  │ │reservations-service│  microsserviços
+                  │ (cardápio) │ │ (pedidos)  │ │    (reservas)      │  autônomos
+                  └─────┬──────┘ └─────┬──────┘ └─────────┬─────────┘
+                        │              │                  │
+                   ┌────▼───┐     ┌────▼─────┐     ┌──────▼────────┐
+                   │ menu-db│     │ orders-db│     │reservations-db│  um banco por serviço
+                   │Postgres│     │ Postgres │     │   Postgres    │
+                   └────────┘     └──────────┘     └───────────────┘
 ```
 
 | Serviço | Responsabilidade | Stack | Porta | Banco |
 |---|---|---|---|---|
 | `web` | Interface do usuário (SPA) e proxy `/api` | nginx | 80 | — |
 | `gateway` | Roteia para os serviços, agrega o painel, aplica Circuit Breaker | Node + Express | 8080 | — |
-| `menu-service` | CRUD de pratos do cardápio | Node + TypeScript | 3001 | `menu-db` |
-| `orders-service` | Registro de pedidos e descontos | Node + TypeScript | 3002 | `orders-db` |
+| `menu-service` | CRUD de pratos do cardápio (criar, editar, excluir, disponibilidade) | Node + TypeScript | 3001 | `menu-db` |
+| `orders-service` | Registro de pedidos, status, descontos e exclusão | Node + TypeScript | 3002 | `orders-db` |
+| `reservations-service` | Reservas de mesa (agendamento, status, exclusão) | Node + TypeScript | 3003 | `reservations-db` |
 
 Cada microsserviço é **autônomo**: tem seu próprio banco de dados e não acessa o banco
 do outro (princípio _database per service_). A comunicação acontece apenas pela borda
@@ -68,12 +71,12 @@ para dentro** (camadas externas dependem das internas, nunca o contrário):
 ```
 src/
 ├── domain/          ← Entidades e regras de negócio (núcleo, sem framework)
-│   ├── entities/        Dish, Order, OrderItem
+│   ├── entities/        Dish, Order, OrderItem, Reservation
 │   ├── discounts/       Estratégias de desconto (orders)
 │   ├── repositories/    Portas (interfaces) de persistência
 │   └── errors/          Erros de domínio
 ├── application/     ← Casos de uso (orquestram o domínio)
-│   └── use-cases/       CreateDish, ListDishes, PlaceOrder, ListOrders
+│   └── use-cases/       CreateDish, UpdateDish, DeleteDish, PlaceOrder, CreateReservation…
 ├── infrastructure/  ← Detalhes: Postgres, configuração, fábricas
 │   ├── repositories/    Implementações (Pg + InMemory)
 │   ├── database/        Pool, schema, tradução de erros
@@ -124,10 +127,10 @@ grafo de dependências.
   estratégias de desconto e o Circuit Breaker, **sem precisar de banco** (usam repositório
   em memória).
 - **BDD** — `Cucumber.js` com cenários em **português (Gherkin)** descrevendo o
-  comportamento esperado do cardápio e dos pedidos.
+  comportamento esperado do cardápio, dos pedidos e das reservas.
 
 ```bash
-# em services/menu-service, services/orders-service e gateway:
+# em services/menu-service, services/orders-service, services/reservations-service e gateway:
 npm install
 npm test          # testes unitários (TDD)
 npm run test:bdd  # cenários de comportamento (BDD) — onde houver
@@ -145,8 +148,8 @@ usuário **nunca vê erro técnico**.
 - Falha de conexão é traduzida em **HTTP 503 com mensagem amigável** (sem stack trace).
 - O **gateway** usa **Circuit Breaker**: se um serviço para de responder, ele falha
   rápido e devolve uma mensagem amigável, em vez de travar a tela.
-- O **painel** tem **degradação parcial**: se o cardápio cair, o bloco de pedidos
-  continua aparecendo, e vice-versa.
+- O **painel** tem **degradação parcial**: se o cardápio cair, os blocos de pedidos e
+  reservas continuam aparecendo, e assim por diante para cada serviço.
 
 **Como demonstrar** (com o sistema rodando):
 
@@ -171,9 +174,10 @@ docker compose up --build
 Cada serviço é um projeto Node independente:
 
 ```bash
-cd services/menu-service && npm install && npm run dev   # porta 3001
-cd services/orders-service && npm install && npm run dev # porta 3002
-cd gateway && npm install && npm run dev                 # porta 8080
+cd services/menu-service && npm install && npm run dev          # porta 3001
+cd services/orders-service && npm install && npm run dev        # porta 3002
+cd services/reservations-service && npm install && npm run dev  # porta 3003
+cd gateway && npm install && npm run dev                        # porta 8080
 ```
 
 ## 10. Deploy

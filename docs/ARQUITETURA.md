@@ -11,9 +11,10 @@ A solução combina dois estilos complementares:
 
 ## 2. Por que microsserviços aqui?
 
-O domínio tem dois contextos bem separados: **cardápio** e **pedidos**. Eles mudam por
-razões diferentes e têm volumes diferentes (o cardápio é quase estático; pedidos crescem
-o tempo todo). Separá-los permite:
+O domínio tem três contextos bem separados: **cardápio**, **pedidos** e **reservas de
+mesa**. Eles mudam por razões diferentes e têm volumes diferentes (o cardápio é quase
+estático; pedidos e reservas crescem o tempo todo, com regras próprias). Separá-los
+permite:
 
 - evoluir e escalar cada parte de forma independente;
 - isolar falhas — se o banco de pedidos cai, o cardápio continua disponível;
@@ -57,6 +58,12 @@ independente de tecnologia.
 - **menu-db** → tabela `dishes` (id, name, description, price_cents, category, available).
 - **orders-db** → tabela `orders` (id, customer_name, table_label, items `JSONB`,
   discount_name, subtotal_cents, discount_cents, total_cents, status, created_at).
+- **reservations-db** → tabela `reservations` (id, customer_name, phone, people_count,
+  date, time, area, notes, status, created_at).
+
+O `orders-service` e o `reservations-service` têm, cada um, uma **máquina de estados**
+no domínio (pedido: RECEBIDO→EM_PREPARO→PRONTO→ENTREGUE; reserva:
+PENDENTE→CONFIRMADA→CONCLUIDA), com cancelamento como transição válida.
 
 Os itens do pedido são guardados como **snapshot** (nome e preço no momento da compra).
 Isso reforça a autonomia: depois de registrado, o pedido não depende mais do cardápio.
@@ -72,7 +79,7 @@ flutuante.
 | Timeouts curtos | `infrastructure/database/pool.ts` | Consultas falham rápido em vez de travar. |
 | Tradução de erro | `connectionErrors.ts` + `errorHandler` | Falha de conexão vira 503 amigável, sem vazar detalhe técnico. |
 | Circuit Breaker | `gateway/src/infra/CircuitBreaker.ts` | Serviço fora → falha rápida com fallback amigável. |
-| Degradação parcial | `gateway` `dashboard` | Uma seção cai, o resto do painel continua. |
+| Degradação parcial | `gateway` `dashboard` | Uma seção (cardápio, pedidos ou reservas) cai, o resto do painel continua. |
 
 ## 7. Justificativas técnicas
 

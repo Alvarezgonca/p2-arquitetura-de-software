@@ -4,9 +4,12 @@
 
 ### S — Responsabilidade Única (SRP)
 Cada classe tem um motivo para mudar.
-- `CreateDish` / `PlaceOrder` (`application/use-cases`): só orquestram um caso de uso.
-- `DishController` / `OrderController` (`presentation`): só adaptam HTTP ↔ caso de uso.
-- `Dish` / `Order` (`domain/entities`): só guardam regra de negócio.
+- `CreateDish` / `PlaceOrder` / `CreateReservation` (`application/use-cases`): só
+  orquestram um caso de uso.
+- `DishController` / `OrderController` / `ReservationController` (`presentation`): só
+  adaptam HTTP ↔ caso de uso.
+- `Dish` / `Order` / `Reservation` (`domain/entities`): só guardam regra de negócio
+  (incluindo as máquinas de estado de pedido e reserva).
 
 ### O — Aberto/Fechado (OCP)
 Aberto para extensão, fechado para modificação.
@@ -18,8 +21,8 @@ Aberto para extensão, fechado para modificação.
 ### L — Substituição de Liskov (LSP)
 Implementações podem substituir suas abstrações sem quebrar o sistema.
 - `PgDishRepository` e `InMemoryDishRepository` implementam `DishRepository`; o caso de
-  uso funciona com qualquer uma.
-  - Arquivos: `menu-service/src/infrastructure/repositories/`.
+  uso funciona com qualquer uma. O mesmo vale para os repositórios de pedidos e reservas.
+  - Arquivos: `*/src/infrastructure/repositories/`.
 
 ### I — Segregação de Interface (ISP)
 Interfaces pequenas e focadas.

@@ -2,6 +2,8 @@ import express, { Express } from 'express';
 import { RepositoryFactory } from '../infrastructure/RepositoryFactory';
 import { PlaceOrder } from '../application/use-cases/PlaceOrder';
 import { ListOrders } from '../application/use-cases/ListOrders';
+import { UpdateOrderStatus } from '../application/use-cases/UpdateOrderStatus';
+import { DeleteOrder } from '../application/use-cases/DeleteOrder';
 import { OrderController } from '../presentation/http/controllers/OrderController';
 import { buildRouter } from '../presentation/http/routes';
 import { errorHandler } from '../presentation/http/middlewares/errorHandler';
@@ -15,7 +17,9 @@ export function buildApp(): Express {
   const orderRepository = RepositoryFactory.createOrderRepository();
   const placeOrder = new PlaceOrder(orderRepository);
   const listOrders = new ListOrders(orderRepository);
-  const controller = new OrderController(placeOrder, listOrders);
+  const updateOrderStatus = new UpdateOrderStatus(orderRepository);
+  const deleteOrder = new DeleteOrder(orderRepository);
+  const controller = new OrderController(placeOrder, listOrders, updateOrderStatus, deleteOrder);
 
   const app = express();
   app.use(express.json());

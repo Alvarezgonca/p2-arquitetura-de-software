@@ -13,6 +13,7 @@ jobs:
         service:
           - services/menu-service
           - services/orders-service
+          - services/reservations-service
           - gateway
     defaults:
       run:

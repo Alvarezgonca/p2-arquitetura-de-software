@@ -9,7 +9,8 @@ import { errorHandler } from '../presentation/middlewares/errorHandler';
 export function buildApp(): Express {
   const menuClient = new HttpServiceClient(env.menuServiceUrl, 'menu-service');
   const ordersClient = new HttpServiceClient(env.ordersServiceUrl, 'orders-service');
-  const controller = new GatewayController(menuClient, ordersClient);
+  const reservationsClient = new HttpServiceClient(env.reservationsServiceUrl, 'reservations-service');
+  const controller = new GatewayController(menuClient, ordersClient, reservationsClient);
 
   const app = express();
   app.use(express.json());

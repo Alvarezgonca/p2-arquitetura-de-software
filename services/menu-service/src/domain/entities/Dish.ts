@@ -53,6 +53,41 @@ export class Dish {
     return new Dish(props);
   }
 
+  /**
+   * Liga/desliga a disponibilidade do prato, devolvendo uma nova instância.
+   * Manter a entidade imutável evita efeitos colaterais escondidos.
+   */
+  withAvailability(available: boolean): Dish {
+    return new Dish({ ...this.props, available });
+  }
+
+  /**
+   * Aplica uma edição validando as mesmas invariantes da criação e
+   * preservando o identificador. Campos ausentes mantêm o valor atual.
+   */
+  withDetails(input: {
+    name?: string;
+    description?: string;
+    priceCents?: number;
+    category?: string;
+  }): Dish {
+    const name = (input.name ?? this.props.name).trim();
+    if (name.length < 2) {
+      throw new DomainError('O nome do prato deve ter ao menos 2 caracteres.');
+    }
+    const priceCents = input.priceCents ?? this.props.priceCents;
+    if (!Number.isInteger(priceCents) || priceCents < 0) {
+      throw new DomainError('O preço do prato deve ser um valor inteiro em centavos maior ou igual a zero.');
+    }
+    return new Dish({
+      ...this.props,
+      name,
+      description: (input.description ?? this.props.description).trim(),
+      priceCents,
+      category: (input.category ?? this.props.category).trim() || 'Geral',
+    });
+  }
+
   get id(): string {
     return this.props.id;
   }

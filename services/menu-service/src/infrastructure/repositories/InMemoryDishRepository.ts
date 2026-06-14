@@ -1,5 +1,5 @@
 import { Dish } from '../../domain/entities/Dish';
-import { DishRepository } from '../../domain/repositories/DishRepository';
+import { DishFilter, DishRepository } from '../../domain/repositories/DishRepository';
 
 /**
  * Implementação em memória do repositório.
@@ -15,11 +15,33 @@ export class InMemoryDishRepository implements DishRepository {
     this.items.set(dish.id, dish);
   }
 
-  async findAll(): Promise<Dish[]> {
-    return [...this.items.values()];
+  async findAll(filter?: DishFilter): Promise<Dish[]> {
+    let dishes = [...this.items.values()];
+    if (filter?.category) {
+      const category = filter.category.toLowerCase();
+      dishes = dishes.filter((dish) => dish.category.toLowerCase() === category);
+    }
+    if (filter?.search) {
+      const term = filter.search.toLowerCase();
+      dishes = dishes.filter(
+        (dish) =>
+          dish.name.toLowerCase().includes(term) ||
+          dish.description.toLowerCase().includes(term),
+      );
+    }
+    if (filter?.available !== undefined) {
+      dishes = dishes.filter((dish) => dish.available === filter.available);
+    }
+    return dishes.sort(
+      (a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name),
+    );
   }
 
   async findById(id: string): Promise<Dish | null> {
     return this.items.get(id) ?? null;
+  }
+
+  async delete(id: string): Promise<boolean> {
+    return this.items.delete(id);
   }
 }

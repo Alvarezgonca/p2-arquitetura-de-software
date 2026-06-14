@@ -20,6 +20,7 @@
         <button class="tab is-active" data-tab="cardapio">Cardápio</button>
         <button class="tab" data-tab="pedido">Novo pedido</button>
         <button class="tab" data-tab="pedidos">Pedidos</button>
+        <button class="tab" data-tab="reservas">Reservas</button>
         <button class="tab" data-tab="painel">Painel</button>
       </nav>
     </header>
@@ -39,9 +40,17 @@
           </div>
           <label>Descrição<input name="description" /></label>
           <label>Preço (R$)<input name="price" type="number" step="0.01" min="0" required /></label>
-          <button class="btn btn--primary" type="submit">Salvar prato</button>
+          <div class="form__actions">
+            <button class="btn btn--primary" type="submit" id="prato-submit">Salvar prato</button>
+            <button class="btn btn--ghost is-hidden" type="button" id="prato-cancelar">Cancelar edição</button>
+          </div>
           <p class="form__msg" id="prato-msg"></p>
         </form>
+
+        <div class="filterbar">
+          <input id="cardapio-busca" class="filterbar__search" placeholder="🔎 Buscar prato…" />
+          <div class="chips" id="cardapio-categorias"></div>
+        </div>
 
         <div id="cardapio-status"></div>
         <div class="cards" id="cardapio-lista"></div>
@@ -53,6 +62,10 @@
         <p class="muted">Adicione itens pelo cardápio e finalize aqui.</p>
 
         <div class="cart card" id="carrinho">
+          <div class="cart__head">
+            <strong>Carrinho</strong>
+            <button class="btn btn--ghost btn--small is-hidden" id="limpar-carrinho">Limpar carrinho</button>
+          </div>
           <p class="muted" id="carrinho-vazio">Seu carrinho está vazio.</p>
           <ul class="cart__items" id="carrinho-itens"></ul>
         </div>
@@ -76,10 +89,63 @@
       <section class="panel" id="tab-pedidos">
         <div class="panel__head">
           <h2>Pedidos recebidos</h2>
-          <button class="btn btn--ghost" id="reload-pedidos">Atualizar</button>
+          <div class="panel__actions">
+            <select id="pedidos-filtro" class="select-inline">
+              <option value="">Todos os status</option>
+              <option value="RECEBIDO">Recebidos</option>
+              <option value="EM_PREPARO">Em preparo</option>
+              <option value="PRONTO">Prontos</option>
+              <option value="ENTREGUE">Entregues</option>
+              <option value="CANCELADO">Cancelados</option>
+            </select>
+            <button class="btn btn--ghost" id="reload-pedidos">Atualizar</button>
+          </div>
         </div>
         <div id="pedidos-status"></div>
         <div class="cards" id="pedidos-lista"></div>
+      </section>
+
+      <!-- RESERVAS -->
+      <section class="panel" id="tab-reservas">
+        <div class="panel__head">
+          <h2>Reservas de mesa</h2>
+          <button class="btn btn--ghost" id="toggle-nova-reserva">+ Nova reserva</button>
+        </div>
+
+        <form class="card form is-hidden" id="form-reserva">
+          <div class="grid-2">
+            <label>Cliente<input name="customerName" required minlength="2" /></label>
+            <label>Telefone<input name="phone" placeholder="(opcional)" /></label>
+          </div>
+          <div class="grid-2">
+            <label>Data<input name="date" type="date" required /></label>
+            <label>Horário<input name="time" type="time" required /></label>
+          </div>
+          <div class="grid-2">
+            <label>Pessoas<input name="peopleCount" type="number" min="1" max="20" value="2" required /></label>
+            <label>Área
+              <select name="area" id="select-area"></select>
+            </label>
+          </div>
+          <label>Observações<input name="notes" placeholder="Ex.: aniversário, cadeirinha de bebê" /></label>
+          <button class="btn btn--primary" type="submit">Salvar reserva</button>
+          <p class="form__msg" id="reserva-msg"></p>
+        </form>
+
+        <div class="panel__head">
+          <div class="panel__actions">
+            <select id="reservas-filtro" class="select-inline">
+              <option value="">Todos os status</option>
+              <option value="PENDENTE">Pendentes</option>
+              <option value="CONFIRMADA">Confirmadas</option>
+              <option value="CONCLUIDA">Concluídas</option>
+              <option value="CANCELADA">Canceladas</option>
+            </select>
+            <button class="btn btn--ghost" id="reload-reservas">Atualizar</button>
+          </div>
+        </div>
+        <div id="reservas-status"></div>
+        <div class="cards" id="reservas-lista"></div>
       </section>
 
       <!-- PAINEL -->

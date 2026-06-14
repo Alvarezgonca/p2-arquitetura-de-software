@@ -42,6 +42,18 @@ export class HttpServiceClient {
     return this.request('POST', path, body);
   }
 
+  patch(path: string, body: unknown): Promise<DownstreamResponse> {
+    return this.request('PATCH', path, body);
+  }
+
+  put(path: string, body: unknown): Promise<DownstreamResponse> {
+    return this.request('PUT', path, body);
+  }
+
+  delete(path: string): Promise<DownstreamResponse> {
+    return this.request('DELETE', path);
+  }
+
   state(): string {
     return this.breaker.getState();
   }

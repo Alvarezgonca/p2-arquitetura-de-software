@@ -2,6 +2,7 @@ import { Given, When, Then, Before } from '@cucumber/cucumber';
 import assert from 'node:assert';
 import { InMemoryOrderRepository } from '../../../src/infrastructure/repositories/InMemoryOrderRepository';
 import { PlaceOrder } from '../../../src/application/use-cases/PlaceOrder';
+import { UpdateOrderStatus } from '../../../src/application/use-cases/UpdateOrderStatus';
 
 interface CartItem {
   dishId: string;
@@ -12,7 +13,7 @@ interface CartItem {
 
 let cart: CartItem[];
 let repository: InMemoryOrderRepository;
-let placedOrder: { totalCents: number } | undefined;
+let placedOrder: { id: string; totalCents: number; status: string } | undefined;
 
 Before(() => {
   cart = [];
@@ -38,7 +39,17 @@ When(
   },
 );
 
+When('eu avanço o pedido para o status {string}', async (status: string) => {
+  assert.ok(placedOrder, 'o pedido não foi finalizado');
+  placedOrder = await new UpdateOrderStatus(repository).execute(placedOrder!.id, status);
+});
+
 Then('o total do pedido deve ser {int} reais', (reais: number) => {
   assert.ok(placedOrder, 'o pedido não foi finalizado');
   assert.strictEqual(placedOrder?.totalCents, reais * 100);
+});
+
+Then('o status do pedido deve ser {string}', (status: string) => {
+  assert.ok(placedOrder, 'o pedido não foi finalizado');
+  assert.strictEqual(placedOrder?.status, status);
 });

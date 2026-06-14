@@ -1,7 +1,7 @@
 import type { Pool } from 'pg';
 import { Order } from '../../domain/entities/Order';
 import { OrderItem, OrderItemProps } from '../../domain/entities/OrderItem';
-import { OrderRepository } from '../../domain/repositories/OrderRepository';
+import { OrderFilter, OrderRepository } from '../../domain/repositories/OrderRepository';
 import { DatabaseUnavailableError } from '../../domain/errors/DomainError';
 import { getPool } from '../database/pool';
 import { isConnectionError } from '../database/connectionErrors';
@@ -31,7 +31,7 @@ export class PgOrderRepository implements OrderRepository {
            (id, customer_name, table_label, items, discount_name,
             subtotal_cents, discount_cents, total_cents, status, created_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-         ON CONFLICT (id) DO NOTHING`,
+         ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status`,
         [
           data.id,
           data.customerName,
@@ -50,15 +50,48 @@ export class PgOrderRepository implements OrderRepository {
     }
   }
 
-  async findAll(): Promise<Order[]> {
+  async findAll(filter?: OrderFilter): Promise<Order[]> {
+    const params: unknown[] = [];
+    let where = '';
+    if (filter?.status) {
+      params.push(filter.status.toUpperCase());
+      where = `WHERE status = $${params.length}`;
+    }
     try {
       const result = await this.pool.query<OrderRow>(
         `SELECT id, customer_name, table_label, items, discount_name,
                 subtotal_cents, discount_cents, total_cents, status, created_at
          FROM orders
+         ${where}
          ORDER BY created_at DESC`,
+        params,
       );
       return result.rows.map((row) => this.toEntity(row));
+    } catch (err) {
+      throw this.translate(err);
+    }
+  }
+
+  async findById(id: string): Promise<Order | null> {
+    try {
+      const result = await this.pool.query<OrderRow>(
+        `SELECT id, customer_name, table_label, items, discount_name,
+                subtotal_cents, discount_cents, total_cents, status, created_at
+         FROM orders
+         WHERE id = $1`,
+        [id],
+      );
+      const row = result.rows[0];
+      return row ? this.toEntity(row) : null;
+    } catch (err) {
+      throw this.translate(err);
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      const result = await this.pool.query('DELETE FROM orders WHERE id = $1', [id]);
+      return (result.rowCount ?? 0) > 0;
     } catch (err) {
       throw this.translate(err);
     }

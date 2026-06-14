@@ -25,6 +25,14 @@ When(
   },
 );
 
+When(
+  'eu cadastro o prato {string} na categoria {string} por {int} reais e {int} centavos',
+  async (name: string, category: string, reais: number, centavos: number) => {
+    const priceCents = reais * 100 + centavos;
+    await new CreateDish(repository).execute({ name, category, priceCents });
+  },
+);
+
 When('eu tento cadastrar o prato {string} por {int} reais', async (name: string, reais: number) => {
   try {
     await new CreateDish(repository).execute({ name, priceCents: reais * 100 });
@@ -44,6 +52,14 @@ Then('o prato {string} deve estar disponível', async (name: string) => {
   assert.ok(dish, `prato "${name}" não encontrado`);
   assert.strictEqual(dish?.available, true);
 });
+
+Then(
+  'a busca por categoria {string} deve retornar {int} prato(s)',
+  async (category: string, count: number) => {
+    const dishes = await new ListDishes(repository).execute({ category });
+    assert.strictEqual(dishes.length, count);
+  },
+);
 
 Then('o cadastro deve ser recusado', () => {
   assert.ok(lastError instanceof DomainError, 'esperava uma violação de regra de negócio');

@@ -13,3 +13,9 @@ Funcionalidade: Registrar pedidos do restaurante
     Dado um carrinho com o item "Rodízio" a 60 reais e quantidade 2
     Quando eu finalizo o pedido para "Maria" com o desconto "COMBO_FAMILIA"
     Então o total do pedido deve ser 102 reais
+
+  Cenário: Acompanhar o preparo de um pedido
+    Dado um carrinho com o item "Risoto" a 50 reais e quantidade 1
+    Quando eu finalizo o pedido para "Lia" com o desconto "NENHUM"
+    E eu avanço o pedido para o status "EM_PREPARO"
+    Então o status do pedido deve ser "EM_PREPARO"

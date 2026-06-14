@@ -32,6 +32,21 @@ services:
       retries: 5
     restart: unless-stopped
 
+  reservations-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sabor
+      POSTGRES_PASSWORD: ${RESERVATIONS_DB_PASSWORD:-sabor_reservations}
+      POSTGRES_DB: reservations_db
+    volumes:
+      - reservations-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sabor -d reservations_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   # ---- Microsserviços ----
   menu-service:
     build: ./services/menu-service
@@ -53,6 +68,16 @@ services:
       - orders-db
     restart: unless-stopped
 
+  reservations-service:
+    build: ./services/reservations-service
+    environment:
+      PORT: 3003
+      NODE_ENV: production
+      DATABASE_URL: postgres://sabor:${RESERVATIONS_DB_PASSWORD:-sabor_reservations}@reservations-db:5432/reservations_db
+    depends_on:
+      - reservations-db
+    restart: unless-stopped
+
   # ---- Gateway (entrada da API) ----
   gateway:
     build: ./gateway
@@ -61,9 +86,11 @@ services:
       NODE_ENV: production
       MENU_SERVICE_URL: http://menu-service:3001
       ORDERS_SERVICE_URL: http://orders-service:3002
+      RESERVATIONS_SERVICE_URL: http://reservations-service:3003
     depends_on:
       - menu-service
       - orders-service
+      - reservations-service
     restart: unless-stopped
 
   # ---- Frontend (entrada pública) ----
@@ -82,3 +109,4 @@ services:
 volumes:
   menu-db-data:
   orders-db-data:
+  reservations-db-data:

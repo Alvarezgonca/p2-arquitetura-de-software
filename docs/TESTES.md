@@ -12,9 +12,15 @@ repositórios em memória — então são rápidos e determinísticos, prontos p
 |---|---|---|
 | menu-service | `tests/unit/dish.entity.test.ts` | Invariantes da entidade `Dish` (nome, preço, categoria). |
 | menu-service | `tests/unit/create-dish.usecase.test.ts` | Caso de uso de criação com repositório em memória. |
+| menu-service | `tests/unit/dish-availability.test.ts` | Disponibilidade, filtros e categorias. |
+| menu-service | `tests/unit/dish-management.test.ts` | Edição (`withDetails`/`UpdateDish`) e exclusão (`DeleteDish`). |
 | orders-service | `tests/unit/discount-strategies.test.ts` | Cada estratégia de desconto e a factory. |
 | orders-service | `tests/unit/order.entity.test.ts` | Cálculo de subtotal/desconto/total e validações. |
+| orders-service | `tests/unit/order-status.test.ts` | Máquina de estados do pedido. |
 | orders-service | `tests/unit/place-order.usecase.test.ts` | Registro de pedido com Combo Família. |
+| orders-service | `tests/unit/order-delete.test.ts` | Exclusão de pedido (`DeleteOrder`). |
+| reservations-service | `tests/unit/reservation.entity.test.ts` | Invariantes e máquina de estados da reserva. |
+| reservations-service | `tests/unit/reservation.usecases.test.ts` | Criar, listar/filtrar, confirmar e excluir reservas. |
 | gateway | `tests/unit/circuit-breaker.test.ts` | Abertura, falha rápida e recuperação (HALF_OPEN). |
 
 ```bash
@@ -39,7 +45,7 @@ Funcionalidade: Gerenciar o cardápio do restaurante
 ```
 
 ```bash
-npm run test:bdd  # em menu-service e orders-service
+npm run test:bdd  # em menu-service, orders-service e reservations-service
 ```
 
 ## Resumo da cobertura funcional

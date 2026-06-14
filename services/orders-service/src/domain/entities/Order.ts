@@ -36,6 +36,20 @@ export interface OrderJSON {
  * o total. Toda a regra fica aqui, no domínio — o caso de uso só orquestra.
  */
 export class Order {
+  /**
+   * Máquina de estados do pedido. Cada status só pode avançar para os
+   * destinos permitidos — a regra mora no domínio, não no controlador.
+   */
+  private static readonly TRANSITIONS: Record<string, readonly string[]> = {
+    RECEBIDO: ['EM_PREPARO', 'CANCELADO'],
+    EM_PREPARO: ['PRONTO', 'CANCELADO'],
+    PRONTO: ['ENTREGUE'],
+    ENTREGUE: [],
+    CANCELADO: [],
+  };
+
+  static readonly STATUSES = Object.keys(Order.TRANSITIONS);
+
   private constructor(private readonly props: OrderProps) {}
 
   static create(input: {
@@ -76,8 +90,27 @@ export class Order {
     return new Order(props);
   }
 
+  /**
+   * Avança o pedido para o próximo status respeitando a máquina de estados.
+   * Lança DomainError se a transição não for permitida.
+   */
+  changeStatus(next: string): void {
+    const target = (next ?? '').toUpperCase();
+    const allowed = Order.TRANSITIONS[this.props.status] ?? [];
+    if (!allowed.includes(target)) {
+      throw new DomainError(
+        `Transição de status inválida: de "${this.props.status}" para "${target || '—'}".`,
+      );
+    }
+    this.props.status = target;
+  }
+
   get id(): string {
     return this.props.id;
+  }
+
+  get status(): string {
+    return this.props.status;
   }
 
   get customerName(): string {

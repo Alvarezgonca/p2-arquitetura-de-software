@@ -15,3 +15,9 @@ Funcionalidade: Gerenciar o cardápio do restaurante
     Quando eu tento cadastrar o prato "Item Inválido" por -5 reais
     Então o cadastro deve ser recusado
     E o cardápio deve conter 0 pratos
+
+  Cenário: Filtrar o cardápio por categoria
+    Dado que o cardápio está vazio
+    Quando eu cadastro o prato "Bruschetta" na categoria "Entradas" por 24 reais e 90 centavos
+    E eu cadastro o prato "Risoto" na categoria "Principais" por 69 reais e 90 centavos
+    Então a busca por categoria "Entradas" deve retornar 1 prato
